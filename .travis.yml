@@ -1,0 +1,83 @@
+sudo: false
+language: cpp
+matrix:
+  include:
+    - os: linux
+      compiler: gcc-4.7
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.7', 'valgrind']
+      env: COMPILER=g++-4.7 CONFIG=Debug OPTIONS="-D ENABLE_MEMTEST=ON"
+
+    - os: linux
+      compiler: gcc-4.9
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.9', 'valgrind']
+      env: COMPILER=g++-4.9 CONFIG=Debug OPTIONS="-D ENABLE_MEMTEST=ON"
+      
+    - os: linux
+      compiler: gcc-5
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-5', 'valgrind']
+      env: COMPILER=g++-5 CONFIG=Debug OPTIONS="-D ENABLE_MEMTEST=ON"
+        
+    - os: linux
+      compiler: gcc-5
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-5', 'valgrind']
+      env: COMPILER=g++-5 CONFIG=Release OPTIONS=""
+      
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['valgrind']
+      env: COMPILER=clang++ CONFIG=Debug OPTIONS="-D ENABLE_MEMTEST=ON"
+      
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['valgrind']
+      env: COMPILER=clang++ CONFIG=Release OPTIONS=""
+     
+    - os: osx
+      compiler: clang
+      env: COMPILER=clang++ CONFIG=Debug OPTIONS=""
+      
+    - os: osx
+      compiler: clang
+      env: COMPILER=clang++ CONFIG=Release OPTIONS=""
+      
+
+before_script:
+  - export BASEDIR=$PWD
+  - mkdir build
+  - cd build
+  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$CONFIG -D ENABLE_TEST=ON $OPTIONS -D CMAKE_INSTALL_PREFIX=$BASEDIR/release ..
+
+script: 
+  - cmake --build . --config $CONFIG --target install
+  - export LD_LIBRARY_PATH=$BASEDIR/release/bin:$BASEDIR/release/bin/tests:$BASEDIR/release/lib:$LD_LIBRARY_PATH
+  - ctest -C $CONFIG || ctest -V -C $CONFIG
+  
+branches:
+  only:
+    - master
+    
+notifications:
+  email:
+    recipients:
+      - mkomm@cern.ch
+    on_success: change
+    on_failure: always
+
