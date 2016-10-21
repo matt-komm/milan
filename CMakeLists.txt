@@ -29,6 +29,8 @@ message(STATUS "Compiler version: ${CMAKE_CXX_COMPILER_VERSION}")
 
 add_subdirectory(external)
 
+include_directories(external/cereal/include)
+
 include_directories(core/include)
 
 add_subdirectory(core)
